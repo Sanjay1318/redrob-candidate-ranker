@@ -31,21 +31,40 @@ On top of the weighted score, **disqualifier multipliers** are applied:
 
 ## Quickstart
 
-### 1. Install dependencies
+### 1. Clone the repo
+```bash
+git clone https://github.com/Sanjay1318/redrob-candidate-ranker.git
+cd redrob-candidate-ranker
+```
+
+### 2. Download the dataset
+> **Note:** `candidates.jsonl` is NOT included in this repo (464 MB).  
+> Download it from the official hackathon dataset link and place it in the project root:
+> ```
+> redrob-candidate-ranker/
+> └── candidates.jsonl   ← place here
+> ```
+
+### 3. Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. Run the ranker
+### 4. Run the ranker
 ```bash
-python src/rank.py --candidates ./candidates.jsonl --out ./submission.csv
+python src/rank.py --candidates candidates.jsonl --out submission.csv
 ```
 
-Runtime: ~55 seconds on a CPU-only machine with 16 GB RAM (100K candidates).
+Runtime: ~55 seconds on CPU with 16 GB RAM (100K candidates).
 
-### 3. Validate output
+### 5. Validate output
 ```bash
 python scripts/validate_submission.py submission.csv
+```
+
+### 6. Regenerate the PDF deck (optional)
+```bash
+python scripts/build_deck.py docs/approach_deck.pdf
 ```
 
 ---
@@ -53,16 +72,18 @@ python scripts/validate_submission.py submission.csv
 ## Project Structure
 
 ```
-.
+redrob-candidate-ranker/
 ├── src/
-│   └── rank.py                  # Main ranking system (single entrypoint)
+│   └── rank.py                   # Main ranking system (single entrypoint)
 ├── scripts/
-│   └── validate_submission.py   # Official format validator
+│   ├── build_deck.py             # Generates the PDF approach deck
+│   └── validate_submission.py    # Official format validator
 ├── docs/
-│   └── approach_deck.pdf        # Methodology presentation
-├── submission.csv               # Final ranked output (top 100)
-├── submission_metadata.yaml     # Team metadata
+│   └── approach_deck.pdf         # Methodology presentation (12 slides)
+├── submission.csv                # Final ranked output (top 100 candidates)
+├── submission_metadata.yaml      # Team metadata
 ├── requirements.txt
+├── .gitignore
 └── README.md
 ```
 
@@ -71,16 +92,16 @@ python scripts/validate_submission.py submission.csv
 ## Key Design Decisions
 
 ### Why TF-IDF over dense embeddings?
-The compute constraint (5 min CPU, 16 GB RAM, no GPU) rules out running sentence-transformers over 100K candidates in the ranking step. TF-IDF with bigrams over 15K features gives strong semantic overlap at milliseconds per candidate. Dense embeddings would be pre-computed in a production system but require disk artifacts.
+The compute constraint (5 min CPU, 16 GB RAM, no GPU) rules out running sentence-transformers over 100K candidates in the ranking step. TF-IDF with bigrams over 15K features gives strong semantic overlap at milliseconds per candidate.
 
 ### Why not pure LLM scoring?
-Per submission spec Section 3: no external API calls during ranking. A local LLM per-candidate would easily exceed the 5-minute wall-clock budget. Our approach: LLM-quality reasoning from structured signals, LLM-speed from vectorized operations.
+Per submission spec: no external API calls during ranking. A local LLM per-candidate would exceed the 5-minute wall-clock budget. Our approach delivers LLM-quality reasoning from structured signals at TF-IDF speed.
 
 ### Disqualifiers before score aggregation
-The JD explicitly states disqualifying patterns. We apply multiplicative penalties rather than additive penalties so a great score in one dimension cannot "rescue" a truly disqualifying factor.
+The JD explicitly states disqualifying patterns. We apply multiplicative penalties so a great score in one dimension cannot rescue a truly disqualifying factor.
 
 ### Honeypot detection
-We check for: timeline impossibilities (claimed months > YoE × 12 × 1.3), implausibly many "expert" skills with zero endorsements, and perfect completeness with all-zero assessment scores. These profiles are scored near 0.
+We check for: timeline impossibilities (claimed months > YoE × 12 × 1.3), implausibly many "expert" skills with zero endorsements, and perfect completeness with all-zero assessment scores.
 
 ---
 
@@ -100,7 +121,6 @@ We check for: timeline impossibilities (claimed months > YoE × 12 × 1.3), impl
 
 ## Reproducing the Submission
 
-The submitted `submission.csv` was generated with:
 ```bash
 python src/rank.py \
   --candidates ./candidates.jsonl \
@@ -108,7 +128,7 @@ python src/rank.py \
 ```
 
 Environment: Python 3.12, scikit-learn 1.8.0, numpy 2.4.4, pandas 3.0.2  
-Runtime: ~55 seconds wall-clock | Peak RAM: ~3.5 GB | No GPU | No network calls
+Runtime: ~55 seconds | Peak RAM: ~3.5 GB | No GPU | No network calls
 
 ---
 
