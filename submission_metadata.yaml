@@ -1,0 +1,28 @@
+team_name: "team_001"
+primary_contact_name: "Sanjay Chari"
+primary_contact_email: "sanjaychari007@example.com"
+primary_contact_linkedin: "sanjaychari007"
+github_repository_url: "https://github.com/sanjaychari007/redrob-candidate-ranker"
+sandbox_demo_link: "https://huggingface.co/spaces/sanjaychari007/redrob-ranker"
+
+ai_tools_declared:
+  - "Claude (Anthropic)"
+
+compute_environment_summary: "Python 3.12, CPU only, 16GB RAM, scikit-learn 1.8.0 — no GPU, no external API calls"
+
+team_members:
+  - name: "Sanjay Chari"
+    email: "sanjaychari007@example.com"
+
+methodology_summary: >
+  Multi-signal hybrid scorer combining TF-IDF semantic similarity (28%), 
+  skills-match scoring against JD-required and bonus signals (28%), 
+  career quality scoring for product-company ratio/title fit/YoE/tenure (20%), 
+  platform behavioral signals for recency/response rate/availability (14%), 
+  and location fit (10%). Disqualifier multipliers applied for consulting-only 
+  career, wrong-role title, job-hopper patterns, and honeypot profiles. 
+  Runs on CPU in ~55 seconds for 100K candidates with no external API calls.
+
+submission_csv: "submission.csv"
+candidates_file: "candidates.jsonl"
+run_command: "python src/rank.py --candidates ./candidates.jsonl --out ./submission.csv"
